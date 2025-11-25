@@ -1,1 +1,1 @@
-# Memify
+# FaiRY
