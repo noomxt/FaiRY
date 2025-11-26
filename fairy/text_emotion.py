@@ -1,6 +1,11 @@
-"""
-텍스트 감정 모듈
----------------
-사용자가 입력한 텍스트에서 키워드를 찾아
-감정(기쁨, 슬픔 등)을 판별하는 기능을 담당합니다.
-"""
+import re
+
+class TextEmotionAnalyzer:
+    def __init__(self):
+        pass
+
+    def _remove_whitespace(self,text):
+        return "".join(text.split())
+    
+    def _normalize_repeated_chars(self,text):
+        return re.sub(r'(.)\1{2,}',r'\1\1',text)
