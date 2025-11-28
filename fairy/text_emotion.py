@@ -18,3 +18,9 @@ class TextEmotionAnalyzer:
         for slang, replacement in self.slang_map.items():
             processed_text = processed_text.replace(slang, replacement)
         return processed_text
+    
+    def preprocess_text(self, text):
+        text = self._normalize_repeated_chars(text)
+        text = self._censor_slang(text)
+        text = self._remove_whitespace(text)
+        return text
