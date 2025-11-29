@@ -24,3 +24,13 @@ class TextEmotionAnalyzer:
         text = self._censor_slang(text)
         text = self._remove_whitespace(text)
         return text
+    
+    def analyze_text(self, text):
+        processed_text = self.preprocess_text(text)
+
+        if any(word in processed_text for word in self.sad_keywords):
+            return "sad"
+        elif any(word in processed_text for word in self.happy_keywords):
+            return "happy"
+        else:
+            return "neutral"
