@@ -34,3 +34,11 @@ class TextEmotionAnalyzer:
             return "happy"
         else:
             return "neutral"
+        
+    def get_matching_results(self, sentiment):
+        if sentiment == "sad":
+            return {"recommendation": "따뜻한 차 마시기"}
+        elif sentiment == "happy":
+            return {"recommendation": "신나는 노래 듣기"}
+        else:
+            return {"recommendation": "명상하기"}
