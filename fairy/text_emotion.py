@@ -124,7 +124,6 @@ if __name__ == "__main__":
         sentiment = analyzer.analyze_text(user_input)
         recommendation = analyzer.get_matching_results(sentiment)
         
-        # 4. 결과 출력
         print(f"\n분석된 감정: [{sentiment}]")
         print(f"추천 노래: {recommendation['song']}")
         print(f"추천 할 일: {recommendation['todo']}")
