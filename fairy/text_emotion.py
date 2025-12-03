@@ -108,3 +108,24 @@ class TextEmotionAnalyzer:
 
         target_list = recommendations.get(sentiment, recommendations["평온"])
         return random.choice(target_list)
+    
+
+if __name__ == "__main__":
+    analyzer = TextEmotionAnalyzer()
+    print("\n=== 텍스트 감정 분석 및 추천기 (종료: 'q') ===")
+
+    while True:
+        user_input = input("\n오늘의 기분이나 하고 싶은 말을 적어주세요: ")
+        
+        if user_input.lower() == 'q':
+            print("프로그램을 종료합니다. 행복한 하루 되세요!")
+            break
+            
+        sentiment = analyzer.analyze_text(user_input)
+        recommendation = analyzer.get_matching_results(sentiment)
+        
+        # 4. 결과 출력
+        print(f"\n분석된 감정: [{sentiment}]")
+        print(f"추천 노래: {recommendation['song']}")
+        print(f"추천 할 일: {recommendation['todo']}")
+        print("-" * 40)
