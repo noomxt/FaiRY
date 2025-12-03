@@ -1,5 +1,6 @@
 import re
 import csv
+import os
 from config import EMOTION_FILES
 import random
 
@@ -11,10 +12,18 @@ class TextEmotionAnalyzer:
         data = {}
         for emotion, file_path in EMOTION_FILES.items():
             try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    keywords = [line.strip() for line in f.readlines() if line.strip()]
+                with open(file_path, 'r', encoding='utf-8-sig') as f:
+                    reader = csv.reader(f)
+                    keywords = []
+                    for row in reader:
+                        if row:
+                            keywords.append(row[0].strip())
                     data[emotion] = keywords
             except FileNotFoundError:
+                print(f"Warning: {file_path} 파일을 찾을 수 없습니다.")
+                data[emotion] = []
+            except Exception as e:
+                print(f"Error loading {file_path}: {e}")
                 data[emotion] = []
         return data
 
@@ -25,7 +34,7 @@ class TextEmotionAnalyzer:
         return re.sub(r'(.)\1{2,}',r'\1\1',text)
     
     def _censor_slang(self, text):
-        slang_map = {"ㅅㅂ": "비읍", "개새끼": "멍멍이", "존나": "매우"}
+        slang_map = {"ㅅㅂ": "비읍", "개새끼": "멍멍이", "존나": "매우", "미친": "멋진"}
         
         processed_text = text.lower()
         for slang, replacement in slang_map.items():
@@ -46,6 +55,7 @@ class TextEmotionAnalyzer:
             return "슬픔"
         for emotion, keywords in self.emotion_keywords.items():
             if emotion == '슬픔': continue
+            
             if any(word in processed_text for word in keywords):
                 return emotion
         return "평온"
