@@ -1,11 +1,21 @@
 import re
-import config
+import csv
+from config import EMOTION_FILES
 
 class TextEmotionAnalyzer:
     def __init__(self):
-        self.sad_keywords = getattr(config, 'SAD_KEYWORDS', [])
-        self.happy_keywords = getattr(config, 'HAPPY_KEYWORDS', [])
-        self.slang_map = getattr(config, 'SLANG_MAP', {})
+        self.emotion_keywords = self._load_data()
+
+    def _load_data(self):
+        data = {}
+        for emotion, file_path in EMOTION_FILES.items():
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    keywords = [line.strip() for line in f.readlines() if line.strip()]
+                    data[emotion] = keywords
+            except FileNotFoundError:
+                data[emotion] = []
+        return data
 
     def _remove_whitespace(self,text):
         return "".join(text.split())
@@ -14,8 +24,10 @@ class TextEmotionAnalyzer:
         return re.sub(r'(.)\1{2,}',r'\1\1',text)
     
     def _censor_slang(self, text):
+        slang_map = {"ㅅㅂ": "비읍", "개새끼": "멍멍이", "존나": "매우"}
+        
         processed_text = text.lower()
-        for slang, replacement in self.slang_map.items():
+        for slang, replacement in slang_map.items():
             processed_text = processed_text.replace(slang, replacement)
         return processed_text
     
@@ -28,17 +40,21 @@ class TextEmotionAnalyzer:
     def analyze_text(self, text):
         processed_text = self.preprocess_text(text)
 
-        if any(word in processed_text for word in self.sad_keywords):
-            return "sad"
-        elif any(word in processed_text for word in self.happy_keywords):
-            return "happy"
-        else:
-            return "neutral"
+        sad_list = self.emotion_keywords.get('슬픔', [])
+        if any(word in processed_text for word in sad_list):
+            return "슬픔"
+        for emotion, keywords in self.emotion_keywords.items():
+            if emotion == '슬픔': continue
+            if any(word in processed_text for word in keywords):
+                return emotion
+        return "평온"
         
     def get_matching_results(self, sentiment):
-        if sentiment == "sad":
-            return {"recommendation": "따뜻한 차 마시기"}
-        elif sentiment == "happy":
-            return {"recommendation": "신나는 노래 듣기"}
+        if sentiment == "슬픔":
+            return {"song": "IU - 밤편지", "todo": "따뜻한 차 마시기"}
+        elif sentiment == "기쁨":
+            return {"song": "NewJeans - Hype Boy", "todo": "친구와 약속 잡기"}
+        elif sentiment == "분노":
+            return {"song": "Imagine Dragons - Believer", "todo": "심호흡 10번 하기"}
         else:
-            return {"recommendation": "명상하기"}
+            return {"song": "Classic Piano", "todo": "휴식 취하기"}
