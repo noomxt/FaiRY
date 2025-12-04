@@ -16,21 +16,19 @@ class TextEmotionAnalyzer:
     def _load_data(self):
         data = {}
         patch_data = {
-            "분노": ["빡친다", "돌겟네", "개빡", "킹받네", "열받아", "뚜껑 열린다", "딥빡"],
-            "슬픔": ["광광", "롬곡", "힝", "시무룩", "흑흑"],
-            "기쁨": ["굳", "개꿀", "나이스", "쪼아", "아이조아"],
+            "분노": ["빡친다", "돌겟네", "개빡", "킹받네", "열받아", "뚜껑 열린다", "딥빡", "씨", "시발"],
+            "슬픔": ["광광", "롬곡", "힝", "시무룩", "흑흑", "ㅠ", "ㅜ"],
+            "기쁨": ["굳", "개꿀", "나이스", "쪼아", "아이조아", "굿"],
         }
 
         for emotion, file_path in EMOTION_FILES.items():
             loaded_keywords = []
-            
             if os.path.exists(file_path):
                 try:
                     with open(file_path, 'r', encoding='utf-8-sig') as f:
                         reader = csv.reader(f)
                         for row in reader:
                             if not row: continue
-                            
                             if len(row) >= 3:
                                 word = row[2].strip()
                                 if word != "content": loaded_keywords.append(word)
@@ -41,24 +39,23 @@ class TextEmotionAnalyzer:
                     pass 
 
             final_list = loaded_keywords + patch_data.get(emotion, [])
-            data[emotion] = list(set(final_list))
+            data[emotion] = list(set(final_list)) 
             
         return data
 
-    def _censor_slang(self, text):
-        slang_map = {"ㅅㅂ": "비읍", "개새끼": "멍멍이", "존나": "매우", "미친": "멋진"}
-        processed_text = text.lower()
-        for slang, replacement in slang_map.items():
-            processed_text = processed_text.replace(slang, replacement)
-        return processed_text
-
     def preprocess_text(self, text):
-        text = re.sub(r'(.)\1{2,}', r'\1\1', text)
-        text = self._censor_slang(text)
+        text = re.sub(r'(.)\1{2,}', r'\1\1', text) 
         return "".join(text.split())
 
     def _calculate_similarity(self, input_text, keyword):
         return SequenceMatcher(None, input_text, keyword).ratio()
+
+    def _check_slang(self, text):
+        slang_list = ["시발", "씨발", "개새", "ㅈㄴ", "존나", "미친", "ㅅㅂ"]
+        for slang in slang_list:
+            if slang in text:
+                return True
+        return False
 
     def analyze_text(self, text):
         processed_text = self.preprocess_text(text)
@@ -66,6 +63,10 @@ class TextEmotionAnalyzer:
         
         scores = {emotion: 0 for emotion in self.emotion_keywords.keys()}
         
+        if self._check_slang(processed_text):
+            scores["분노"] += 20 
+            print("욕설 감지: 분노 점수 +20 (가중치)")
+
         for emotion, keywords in self.emotion_keywords.items():
             for keyword in keywords:
                 clean_keyword = "".join(keyword.split())
@@ -81,7 +82,10 @@ class TextEmotionAnalyzer:
         if max_score == 0: return "평온"
         
         top_emotions = [k for k, v in scores.items() if v == max_score]
+        
         if "슬픔" in top_emotions: return "슬픔"
+        if "피곤함" in top_emotions: return "피곤함"
+        
         return top_emotions[0]
 
     def get_matching_results(self, sentiment):
@@ -129,7 +133,6 @@ class TextEmotionAnalyzer:
                 {"song": "Maroon 5 - Sunday Morning", "todo": "향긋한 커피 마시기"}
             ]
         }
-        
         target_list = recommendations.get(sentiment, recommendations["평온"])
         return random.choice(target_list)
 
