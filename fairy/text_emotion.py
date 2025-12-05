@@ -51,7 +51,7 @@ class TextEmotionAnalyzer:
         return SequenceMatcher(None, input_text, keyword).ratio()
 
     def _check_slang(self, text):
-        slang_list = ["시발", "씨발", "개새", "ㅈㄴ", "존나", "미친", "ㅅㅂ"]
+        slang_list = ["시발", "씨발", "개새", "ㅈㄴ", "존나", "미친", "ㅅㅂ","쌰갈","싸갈","사갈","씹"]
         for slang in slang_list:
             if slang in text:
                 return True
