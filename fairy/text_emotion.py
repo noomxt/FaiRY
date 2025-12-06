@@ -1,5 +1,14 @@
 import re
+import random
 from difflib import SequenceMatcher
+
+try:
+    from recommend import RECOMMENDATIONS
+except ImportError:
+    try:
+        from .recommend import RECOMMENDATIONS
+    except ImportError:
+        RECOMMENDATIONS = {}
 
 class TextEmotionAnalyzer:
     def __init__(self):
@@ -50,3 +59,11 @@ class TextEmotionAnalyzer:
         
         top_emotions = [k for k, v in scores.items() if v == max_score]
         return top_emotions[0]
+    
+    def get_recommendation(self, sentiment):
+        target_list = RECOMMENDATIONS.get(sentiment, RECOMMENDATIONS.get("평온", []))
+        
+        if not target_list:
+            return {"song": "정보 없음", "todo": "휴식하기"}
+            
+        return random.choice(target_list)
