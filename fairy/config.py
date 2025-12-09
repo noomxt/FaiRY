@@ -14,8 +14,8 @@ EMOTION_FILES = {
     "기쁨": os.path.join(DATA_DIR, 'data_joy.csv'),
     "슬픔": os.path.join(DATA_DIR, 'data_sad.csv'),
     "분노": os.path.join(DATA_DIR, 'data_anger.csv'),
-    "무서움": os.path.join(DATA_DIR, 'data_fear.csv'),
-    "평온": os.path.join(DATA_DIR, 'data_peace.csv')
+    "공포": os.path.join(DATA_DIR, 'data_fear.csv'),   
+    "평온": os.path.join(DATA_DIR, 'data_peace.csv')   
 }
 
 EMOTIONS = list(EMOTION_FILES.keys())

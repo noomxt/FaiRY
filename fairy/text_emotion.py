@@ -1,80 +1,162 @@
-import tkinter as tk
-from tkinter import messagebox
+import re
 import csv
-import random
 import os
-import config  # 설정 파일(config.py) 불러오기
+import random
+from difflib import SequenceMatcher
+from config import EMOTION_FILES
 
-class EmotionApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("FaiRY - 감정 분석기")
-        self.root.geometry("600x500")
-        self.root.configure(bg="#F0F8FF")
-
-        self.brain = {}
+class TextEmotionAnalyzer:
+    def __init__(self):
+        print(f"\n[System] 현재 실행 위치: {os.getcwd()}")
+        self.emotion_keywords = {}
         self.recommendations = {}
-        
-        self.load_data()
-        self.setup_ui()
+        self._load_all_data()
 
-    def load_data(self):
-        print("🤖: 데이터 학습 시작...")
-        for emotion, file_path in config.EMOTION_FILES.items():
-            self.recommendations[emotion] = []
-            try:
-                if os.path.exists(file_path):
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        reader = csv.DictReader(f)
+    def _load_all_data(self):
+        patch_data = {
+            "분노": [
+                "빡친다", "돌겟네", "개빡", "킹받네", "열받아", "뚜껑 열린다", "딥빡", "씨", "시발", "짜증",
+                "화가 난다", "화난다", "화가 나", "화나", "열받네", "승질나"
+            ],
+            "슬픔": [
+                "광광", "롬곡", "힝", "시무룩", "흑흑", "ㅠ", "ㅜ", "우울", "눈물",
+                "슬프다", "슬퍼", "슬픔", "울고싶다", "마음이 아파", "속상해"
+            ],
+            "기쁨": [
+                "굳", "개꿀", "나이스", "쪼아", "아이조아", "굿", "행복", "신나", "럭키비키",
+                "기쁘다", "기뻐", "기쁨", "좋다", "좋아", "즐거워", "최고"
+            ],
+            "공포": [
+                "무서워", "오싹", "ㄷㄷ", "소름", "후덜덜", 
+                "무섭다", "겁나", "공포", "두려워"
+            ],
+            "평온": [
+                "평온", "쏘쏘", "보통", "휴식", "멍", 
+                "그냥", "무난", "별일 없어", "편안"
+            ]
+        }
+
+        for emotion in EMOTION_FILES.keys():
+            self.emotion_keywords[emotion] = []
+            self.recommendations[emotion] = {"song": [], "act": []}
+
+        for emotion, original_path in EMOTION_FILES.items():
+            final_path = original_path
+            
+            if not os.path.exists(original_path):
+                filename = os.path.basename(original_path) 
+                candidates = [
+                    os.path.join('data', filename),              
+                    os.path.join('..', 'data', filename),        
+                    os.path.join('.', 'fairy', 'data', filename)
+                ]
+                
+                found = False
+                for path in candidates:
+                    if os.path.exists(path):
+                        final_path = path
+                        found = True
+                        print(f"경로 자동 보정 성공: {original_path} -> {final_path}")
+                        break
+                
+                if not found:
+                    print(f"실패: '{filename}'을 찾을 수 없습니다. (패치 데이터 사용)")
+                    self.emotion_keywords[emotion] = patch_data.get(emotion, [])
+                    continue
+
+            success = False
+            for enc in ['utf-8-sig', 'cp949']:
+                try:
+                    with open(final_path, 'r', encoding=enc) as f:
+                        reader = csv.reader(f)
+                        count = 0
                         for row in reader:
-                            content = row['content']
-                            if content:
-                                # [핵심] 멘트 학습 (이 말을 들으면 -> 이 감정이다!)
-                                self.brain[content] = emotion
-                                self.recommendations[emotion].append(content)
-            except Exception:
-                pass
-        print(f"✅ 학습 완료! 총 {len(self.brain)}개의 문장을 배웠어요.")
+                            if not row: continue
+                            
+                            if len(row) >= 3:
+                                category = row[1].strip()
+                                content = row[2].strip()
+                                if category == "comment":
+                                    self.emotion_keywords[emotion].append(content)
+                                elif category == "song":
+                                    self.recommendations[emotion]["song"].append(content)
+                                elif category == "act":
+                                    self.recommendations[emotion]["act"].append(content)
+                                count += 1
+                            elif len(row) >= 1:
+                                self.emotion_keywords[emotion].append(row[0].strip())
+                                count += 1
+                        
+                        combined = self.emotion_keywords[emotion] + patch_data.get(emotion, [])
+                        self.emotion_keywords[emotion] = list(set(combined))
+                        
+                        print(f"[{emotion}] 로드 완료 ({count}개)")
+                        success = True
+                        break
+                except UnicodeDecodeError:
+                    continue
+                except Exception:
+                    pass
+            
+            if not success:
+                print(f"읽기 실패: {final_path}")
+                self.emotion_keywords[emotion] = patch_data.get(emotion, [])
 
-    def analyze_emotion(self, user_text):
-        # 1. 정확히 똑같은 말이 있는지 확인
-        if user_text in self.brain:
-            return self.brain[user_text]
-        # 2. 포함된 단어가 있는지 확인
-        for known_text, emotion in self.brain.items():
-            if known_text in user_text: 
-                return emotion
-        return "평온"
+    def preprocess_text(self, text):
+        text = re.sub(r'(.)\1{2,}', r'\1\1', text) 
+        return "".join(text.split())
 
-    def on_click_analyze(self):
-        # 👇 [수정됨] 점(.) 뒤에 get()을 추가해서 오타 해결!
-        user_input = self.entry.get().strip()
+    def _check_slang(self, text):
+        slang_list = ["시발", "씨발", "개새", "ㅈㄴ", "존나", "미친", "ㅅㅂ", "쌰갈", "씹"]
+        for slang in slang_list:
+            if slang in text: return True
+        return False
+
+    def _calculate_similarity(self, input_text, keyword):
+        return SequenceMatcher(None, input_text, keyword).ratio()
+
+    def analyze(self, text):
+        processed_text = self.preprocess_text(text)
+        scores = {emotion: 0 for emotion in self.emotion_keywords.keys()}
         
-        if not user_input:
-            messagebox.showwarning("알림", "하고 싶은 말을 적어주세요!")
-            return
+        if self._check_slang(processed_text):
+            if "분노" in scores: scores["분노"] += 20 
 
-        detected_emotion = self.analyze_emotion(user_input)
+        for emotion, keywords in self.emotion_keywords.items():
+            for keyword in keywords:
+                clean_keyword = "".join(keyword.split())
+                if clean_keyword in processed_text:
+                    scores[emotion] += 100
+                else:
+                    similarity = self._calculate_similarity(processed_text, clean_keyword)
+                    if similarity >= 0.6:
+                        scores[emotion] += int(similarity * 50)
+
+        max_score = max(scores.values())
+        if max_score == 0: return "평온"
         
-        if detected_emotion in self.recommendations and self.recommendations[detected_emotion]:
-            rec_text = random.choice(self.recommendations[detected_emotion])
-        else:
-            rec_text = "추천 데이터가 없네요 😅"
+        top_emotions = [k for k, v in scores.items() if v == max_score]
+        if "슬픔" in top_emotions: return "슬픔"
+        if "공포" in top_emotions: return "공포"
+        return top_emotions[0]
 
-        self.lbl_result_emotion.config(text=f"분석된 감정: {detected_emotion}", fg="blue")
-        self.lbl_result_text.config(text=f"💌 추천 멘트:\n{rec_text}")
-
-    def setup_ui(self):
-        tk.Label(self.root, text="오늘 어떤 일이 있었나요?", font=("맑은 고딕", 16, "bold"), bg="#F0F8FF").pack(pady=20)
-        self.entry = tk.Entry(self.root, font=("맑은 고딕", 12), width=40)
-        self.entry.pack(pady=10)
-        tk.Button(self.root, text="감정 분석하기 🔍", command=self.on_click_analyze, bg="#4682B4", fg="white").pack(pady=10)
-        self.lbl_result_emotion = tk.Label(self.root, text="여기에 감정이 분석됩니다", font=("맑은 고딕", 14), bg="#F0F8FF")
-        self.lbl_result_emotion.pack(pady=20)
-        self.lbl_result_text = tk.Label(self.root, text="", bg="white", width=50, height=5, wraplength=400)
-        self.lbl_result_text.pack(pady=10)
+    def get_recommendation(self, sentiment):
+        rec_data = self.recommendations.get(sentiment, self.recommendations.get("평온"))
+        song = "추천 노래 없음"
+        act = "휴식하기"
+        if rec_data:
+            if rec_data.get("song"): song = random.choice(rec_data["song"])
+            if rec_data.get("act"): act = random.choice(rec_data["act"])
+        return {"song": song, "todo": act}
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = EmotionApp(root)
-    root.mainloop()
+    print("\n---테스트 실행 ---")
+    analyzer = TextEmotionAnalyzer()
+    
+    test_inputs = ["진짜 빡친다", "너무 행복해", "아무 생각이 없다"]
+    for text in test_inputs:
+        result = analyzer.analyze(text)
+        rec = analyzer.get_recommendation(result)
+        print(f"\n입력: {text}")
+        print(f"감정: [{result}]")
+        print(f"추천: {rec['song']} / {rec['todo']}")
