@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="FaiRY",
-    version="1.0.1",  # 버전 살짝 올림
+    name="fairy",
+    version="1.0.1",  
     description="Multi-modal Emotion Analysis & Recommendation Library",
-    author="FaiRY Team",
+    author="AIF5 Team",
     author_email="baesohyun04@hanyang.ac.kr",
     url="https://github.com/noomxt/FaiRY",
     
