@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="FaiRY",
+    name="fairy",
     version="1.0.0",
     description="Multi-modal Emotion Analysis & Recommendation Library",
     author="AIF5 Team",
