@@ -3,7 +3,7 @@ import csv
 import os
 import random
 from difflib import SequenceMatcher
-from config import EMOTION_FILES
+from .config import EMOTION_FILES
 
 class TextEmotionAnalyzer:
     def __init__(self):
