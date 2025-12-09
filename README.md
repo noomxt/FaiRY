@@ -50,7 +50,33 @@ FaiRY/
 ├── app.py              # 🚀 [Execution] 웹 애플리케이션 실행 파일
 ├── setup.py            # 📦 [Deploy] 패키지 배포 및 설치 설정
 └── requirements.txt    # 📌 [Env] 의존성 라이브러리 목록
+```
 
-# 웹 서버 실행
+---
+## 📦 설치 및 실행 (Installation & Usage) 
+프로젝트를 로컬 환경에서 실행하는 방법입니다.
+
+### **필수 조건 (Prerequisites)**
+#### 1. Python 3.8 이상
+#### 2. Git 설치
+#### 3. 터미널(Terminal)에서 아래 명령어를 순서대로 입력하세요.
+① 프로젝트 복제 (Clone Repository)
+```bash
+git clone [https://github.com/noomxt/FaiRY.git](https://github.com/noomxt/FaiRY.git)
+cd FaiRY
+```
+② 필수 라이브러리 설치 (Install Dependencies)
+```bash
+pip install -r requirements.txt
+# 또는
+pip install flask werkzeug pillow torch transformers opencv-python pandas
+```
+
+#### 4. 실행 (Run Demo)
+설치가 완료되면 웹 데모를 실행할 수 있습니다.
+```bash
 python app.py
+```
 실행 후 브라우저 주소창에 http://127.0.0.1:5000 을 입력하여 접속하세요.
+
+---
