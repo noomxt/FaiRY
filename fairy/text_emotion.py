@@ -4,6 +4,8 @@ import os
 import random
 from difflib import SequenceMatcher
 from config import EMOTION_FILES
+import importlib.resources as pkg_resources
+from fairy import data as data_dir
 
 class TextEmotionAnalyzer:
     def __init__(self):
@@ -67,8 +69,8 @@ class TextEmotionAnalyzer:
             success = False
             for enc in ['utf-8-sig', 'cp949']:
                 try:
-                    with open(final_path, 'r', encoding=enc) as f:
-                        reader = csv.reader(f)
+                    with pkg_resources.open_text(data_dir, filename, encoding=enc) as f:
+                        reader=csv.reader(f)
                         count = 0
                         for row in reader:
                             if not row: continue
