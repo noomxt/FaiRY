@@ -3,7 +3,8 @@ import csv
 import os
 import random
 from difflib import SequenceMatcher
-from config import EMOTION_FILES
+from . import config
+from .config import EMOTION_FILES
 import importlib.resources as pkg_resources
 from fairy import data as data_dir
 from .config import EMOTION_FILE
