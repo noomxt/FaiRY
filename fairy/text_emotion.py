@@ -3,8 +3,10 @@ import csv
 import os
 import random
 from difflib import SequenceMatcher
-from .config import EMOTION_FILES
-
+from config import EMOTION_FILES
+import importlib.resources as pkg_resources
+from fairy import data as data_dir
+from .config import EMOTION_FILE
 class TextEmotionAnalyzer:
     def __init__(self):
         print(f"\n[System] 현재 실행 위치: {os.getcwd()}")
@@ -14,60 +16,45 @@ class TextEmotionAnalyzer:
 
     def _load_all_data(self):
         patch_data = {
-            "분노": [
-                "빡친다", "돌겟네", "개빡", "킹받네", "열받아", "뚜껑 열린다", "딥빡", "씨", "시발", "짜증",
-                "화가 난다", "화난다", "화가 나", "화나", "열받네", "승질나"
-            ],
+             "분노": ["빡친다", "돌겟네", "개빡", "킹받네", "열받아", "뚜껑 열린다", "딥빡", "씨", "시발",
+                     "짜증","화가 난다", "화난다", "화가 나", "화나", "열받네", "승질나"
+                     ],
             "슬픔": [
                 "광광", "롬곡", "힝", "시무룩", "흑흑", "ㅠ", "ㅜ", "우울", "눈물",
                 "슬프다", "슬퍼", "슬픔", "울고싶다", "마음이 아파", "속상해"
-            ],
+                    ],
             "기쁨": [
                 "굳", "개꿀", "나이스", "쪼아", "아이조아", "굿", "행복", "신나", "럭키비키",
                 "기쁘다", "기뻐", "기쁨", "좋다", "좋아", "즐거워", "최고"
-            ],
+                    ],
             "공포": [
-                "무서워", "오싹", "ㄷㄷ", "소름", "후덜덜", 
+                "무서워", "오싹", "ㄷㄷ", "소름", "후덜덜",
                 "무섭다", "겁나", "공포", "두려워"
             ],
             "평온": [
-                "평온", "쏘쏘", "보통", "휴식", "멍", 
+                "평온", "쏘쏘", "보통", "휴식", "멍",
                 "그냥", "무난", "별일 없어", "편안"
-            ]
+                    ]
+        }
+
+        file_map = {
+            "기쁨": "data_joy.csv",
+            "슬픔": "data_sad.csv",
+            "분노": "data_anger.csv",
+            "공포": "data_fear.csv",
+            "평온": "data_peace.csv"
         }
 
         for emotion in EMOTION_FILES.keys():
             self.emotion_keywords[emotion] = []
             self.recommendations[emotion] = {"song": [], "act": []}
 
-        for emotion, original_path in EMOTION_FILES.items():
-            final_path = original_path
-            
-            if not os.path.exists(original_path):
-                filename = os.path.basename(original_path) 
-                candidates = [
-                    os.path.join('data', filename),              
-                    os.path.join('..', 'data', filename),        
-                    os.path.join('.', 'fairy', 'data', filename)
-                ]
-                
-                found = False
-                for path in candidates:
-                    if os.path.exists(path):
-                        final_path = path
-                        found = True
-                        print(f"경로 자동 보정 성공: {original_path} -> {final_path}")
-                        break
-                
-                if not found:
-                    print(f"실패: '{filename}'을 찾을 수 없습니다. (패치 데이터 사용)")
-                    self.emotion_keywords[emotion] = patch_data.get(emotion, [])
-                    continue
-
+        for emotion, filename in file_map.items():
             success = False
+            
             for enc in ['utf-8-sig', 'cp949']:
                 try:
-                    with open(final_path, 'r', encoding=enc) as f:
+                    with pkg_resources.open_text(data_dir, filename, encoding=enc) as f:
                         reader = csv.reader(f)
                         count = 0
                         for row in reader:
@@ -99,7 +86,7 @@ class TextEmotionAnalyzer:
                     pass
             
             if not success:
-                print(f"읽기 실패: {final_path}")
+                print(f"파일 로드 실패({filename}) -> 패치 데이터 사용")
                 self.emotion_keywords[emotion] = patch_data.get(emotion, [])
 
     def preprocess_text(self, text):
@@ -153,7 +140,7 @@ if __name__ == "__main__":
     print("\n---테스트 실행 ---")
     analyzer = TextEmotionAnalyzer()
     
-    test_inputs = ["진짜 빡친다", "너무 행복해", "아무 생각이 없다"]
+    test_inputs = ["진짜 빡친다", "너무 행복해", "아무 생각이 없다", "나 오늘 좀 슬프다"]
     for text in test_inputs:
         result = analyzer.analyze(text)
         rec = analyzer.get_recommendation(result)
