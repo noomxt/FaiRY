@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="fairy",
-    version="1.0.1",  
+    name="FaiRY",
+    version="1.0.1",
     description="Multi-modal Emotion Analysis & Recommendation Library",
     author="AIF5 Team",
     author_email="baesohyun04@hanyang.ac.kr",
@@ -10,7 +10,11 @@ setup(
     
     packages=find_packages(),
     
-    include_package_data=True,
+    package_data={
+        "fairy": ["data/*.csv"],
+    },
+    
+    include_package_data=True, 
     
     install_requires=[
         "flask",
@@ -19,7 +23,7 @@ setup(
         "torch",
         "transformers",
         "numpy",
-        "pandas"
+        "pandas",
     ],
     
     python_requires=">=3.8",
