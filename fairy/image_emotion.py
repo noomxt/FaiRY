@@ -3,7 +3,7 @@ from PIL import Image
 import torch
 import tkinter as tk
 from tkinter import filedialog
-import config   # 다른 팀원이 만든 파일을 불러옴
+from . import config  # 다른 팀원이 만든 파일을 불러옴
 
 # 감정 라벨 (FER2013 기준)
 emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']

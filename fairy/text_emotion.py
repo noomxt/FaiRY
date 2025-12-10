@@ -6,7 +6,7 @@ from difflib import SequenceMatcher
 from config import EMOTION_FILES
 import importlib.resources as pkg_resources
 from fairy import data as data_dir
-
+from .config import EMOTION_FILE
 class TextEmotionAnalyzer:
     def __init__(self):
         print(f"\n[System] 현재 실행 위치: {os.getcwd()}")
