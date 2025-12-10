@@ -23,7 +23,7 @@ Face and text Analysis & Intelligent Recommendation for You - 당신을 위한 �
 ### 1. 📸 얼굴 및 텍스트 감정 분석 (Face & Text Analysis)
 * **Visual Analysis:** ViT (Vision Transformer) 모델을 사용하여 미세한 얼굴 표정을 정밀하게 분석합니다.
 * **Text Analysis:** 사용자가 입력한 일기나 문장에서 핵심 키워드를 추출하여 감정 상태를 판별합니다.
-* **Multi-modal:** 시각 정보와 텍스트 정보를 결합하여 7가지 핵심 감정(기쁨, 슬픔, 분노, 공포, 평온 등)을 도출합니다.
+* **Multi-modal:** 시각 정보와 텍스트 정보를 결합하여 5가지 핵심 감정(기쁨, 슬픔, 분노, 공포, 평온)을 도출합니다.
 
 ### 2. 🎁 지능형 추천 시스템 (Intelligent Recommendation)
 * 분석된 감정 데이터(Emotion)를 기반으로 기분 전환에 도움이 되는 맞춤형 활동(Todo)과 음악(Song)을 추천합니다.
@@ -62,11 +62,10 @@ FaiRY/
 ### **필수 조건 (Prerequisites)**
 #### 1. Python 3.8 이상
 #### 2. Git 설치
-#### 3. 터미널(Terminal)에서 아래 명령어를 순서대로 입력하세요.
-① 프로젝트 복제 (Clone Repository)
+#### 3. 터미널(Terminal)에서 아래 명령어를 입력하세요.
+① 프로젝트 접근
 ```bash
-git clone [https://github.com/noomxt/FaiRY.git](https://github.com/noomxt/FaiRY.git)
-cd FaiRY
+pip install git+https://github.com/noomxt/FaiRY.git
 ```
 ② 필수 라이브러리 설치 (Install Dependencies)
 ```bash
